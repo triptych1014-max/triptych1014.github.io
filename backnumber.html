@@ -1,0 +1,692 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>백넘버 - 행복</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(128, 125, 120, 1);
+	fill: rgba(128, 125, 120, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(204, 121, 47, 1);
+	fill: rgba(204, 121, 47, 1);
+}
+.highlight-yellow {
+	color: rgba(195, 148, 67, 1);
+	fill: rgba(195, 148, 67, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(63, 126, 190, 1);
+	fill: rgba(63, 126, 190, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(179, 84, 136, 1);
+	fill: rgba(179, 84, 136, 1);
+}
+.highlight-red {
+	color: rgba(201, 85, 73, 1);
+	fill: rgba(201, 85, 73, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 111, 200, 0.09);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(128, 125, 120, 1);
+	fill: rgba(128, 125, 120, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(204, 121, 47, 1);
+	fill: rgba(204, 121, 47, 1);
+}
+.block-color-yellow {
+	color: rgba(195, 148, 67, 1);
+	fill: rgba(195, 148, 67, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(63, 126, 190, 1);
+	fill: rgba(63, 126, 190, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(179, 84, 136, 1);
+	fill: rgba(179, 84, 136, 1);
+}
+.block-color-red {
+	color: rgba(201, 85, 73, 1);
+	fill: rgba(201, 85, 73, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(232, 242, 250, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 99, 174, 0.172); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="262402c2-dee2-806b-8a28-e77e0a1039a9" class="page sans"><header><h1 class="page-title">백넘버 - 행복</h1><p class="page-description"></p><table class="properties"><tbody><tr class="property-row property-row-select"><th><span class="icon property-icon"><div data-testid="/icons/arrow-circle-down_gray.svg" style="width:14px;height:14px;flex-shrink:0;transform:scale(1.2);mask:url(/icons/arrow-circle-down_gray.svg?mode=light) no-repeat center;-webkit-mask:url(/icons/arrow-circle-down_gray.svg?mode=light) no-repeat center;background-color:rgba(142, 139, 134, 1);fill:rgba(142, 139, 134, 1)"></div></span>PARA</th><td><span class="selected-value select-value-color-red">Archive</span></td></tr><tr class="property-row property-row-multi_select"><th><span class="icon property-icon"><div data-testid="/icons/list_gray.svg" style="width:14px;height:14px;flex-shrink:0;transform:scale(1.2);mask:url(/icons/list_gray.svg?mode=light) no-repeat center;-webkit-mask:url(/icons/list_gray.svg?mode=light) no-repeat center;background-color:rgba(142, 139, 134, 1);fill:rgba(142, 139, 134, 1)"></div></span>태그</th><td></td></tr></tbody></table></header><div class="page-body"><figure id="262402c2-dee2-80f3-8442-f02796d1cd86"><a href="https://www.youtube.com/watch?v=w7BN59k4buA&amp;list=RDw7BN59k4buA&amp;start_radio=1" class="bookmark source"><div class="bookmark-info"><div class="bookmark-text"><div class="bookmark-title">[자막] 幸せ(행복) - back number(백넘버) | Live 라이브</div><div class="bookmark-description">幸せ(행복, Shiawase) - back number(백넘버)
+
+번역을 해본다고 하긴 했는데 오역, 의역 다수 있으니 참고만 하시길</div></div><div class="bookmark-href"><img src="https://www.youtube.com/s/desktop/5565b4e1/img/logos/favicon_144x144.png" class="icon bookmark-icon"/>https://www.youtube.com/watch?v=w7BN59k4buA&amp;list=RDw7BN59k4buA&amp;start_radio=1</div></div><img src="https://i.ytimg.com/vi/w7BN59k4buA/maxresdefault.jpg" class="bookmark-image"/></a></figure><h1 id="262402c2-dee2-800c-92b3-dae7ab41c7b2" class="">백넘버 “幸せ” 일본어 학습용 PDF 시트</h1><h2 id="262402c2-dee2-80c8-a4e1-cdc46a9ce68e" class="">1절</h2><table id="262402c2-dee2-803a-9071-ffba12f90fea" class="simple-table"><thead class="simple-table-header"><tr id="262402c2-dee2-80d0-acf6-e03b5ea74feb"><th id="|~YR" class="simple-table-header-color simple-table-header">일본어</th><th id="VPvM" class="simple-table-header-color simple-table-header">일본어 발음</th><th id="&gt;z&gt;s" class="simple-table-header-color simple-table-header">한글 발음</th><th id="|JQo" class="simple-table-header-color simple-table-header">한국어 번역</th><th id="gHGQ" class="simple-table-header-color simple-table-header">문법/학습 포인트</th></tr></thead><tbody><tr id="262402c2-dee2-806e-a505-fdb12da4bd96"><td id="|~YR" class="">本当はもう分かってたの</td><td id="VPvM" class="">ほんとうは もう わかってたの</td><td id="&gt;z&gt;s" class="">혼토-와 모- 와캇테타노</td><td id="|JQo" class="">사실은 이미 알고 있었어요</td><td id="gHGQ" class="">〜てた → 완료/과거 상태</td></tr><tr id="262402c2-dee2-80bf-9831-dacf4f2338c9"><td id="|~YR" class="">あなたがどんなにその人が好きなのかも</td><td id="VPvM" class="">あなたが どんなに そのひとが すきなのかも</td><td id="&gt;z&gt;s" class="">아나타가 돈나니 소노 히토가 스키나노카모</td><td id="|JQo" class="">당신이 얼마나 그 사람을 좋아하는지도</td><td id="gHGQ" class="">〜のか → 의문, 〜も → 강조</td></tr><tr id="262402c2-dee2-801e-97a1-c9df9a3f3b85"><td id="|~YR" class="">となりにいる私じゃ勝ち目が無いって事も</td><td id="VPvM" class="">となりに いる わたしじゃ かちめが ないってことも</td><td id="&gt;z&gt;s" class="">토나리니 이루 와타시쟈 카치메가 나잇테 코토모</td><td id="|JQo" class="">곁에 있는 나에겐 승산이 없다는 것도</td><td id="gHGQ" class="">〜じゃ勝ち目が無い → ~로는 승산이 없다</td></tr><tr id="262402c2-dee2-8039-830e-dfbceae67927"><td id="|~YR" class="">本当はもう知ってたの</td><td id="VPvM" class="">ほんとうは もう しってたの</td><td id="&gt;z&gt;s" class="">혼토-와 모- 싯테타노</td><td id="|JQo" class="">사실은 이미 알고 있었어요</td><td id="gHGQ" class="">〜てた → 완료 상태</td></tr><tr id="262402c2-dee2-806b-877a-f9b073a0c7f5"><td id="|~YR" class="">あなたが恋に落ちてゆく</td><td id="VPvM" class="">あなたが こいに おちてゆく</td><td id="&gt;z&gt;s" class="">아나타가 코이니 오치테 유쿠</td><td id="|JQo" class="">당신이 사랑에 빠져들어가고</td><td id="gHGQ" class="">〜に落ちる → ~에 빠지다, ゆく → 진행</td></tr><tr id="262402c2-dee2-80cb-8976-d36e80e51627"><td id="|~YR" class="">その横で私は</td><td id="VPvM" class="">その よこで わたしは</td><td id="&gt;z&gt;s" class="">소노 요코데 와타시와</td><td id="|JQo" class="">그 옆에서 나는</td><td id="gHGQ" class="">〜で → 장소 표시</td></tr><tr id="262402c2-dee2-803d-89b3-e3d50d68decf"><td id="|~YR" class="">そっとあなたに恋をしていたの</td><td id="VPvM" class="">そっと あなに こいを していたの</td><td id="&gt;z&gt;s" class="">솟토 아나타니 코이오 시테이타노</td><td id="|JQo" class="">몰래 당신을 사랑하고 있었어요</td><td id="gHGQ" class="">〜していた → 과거 진행형</td></tr><tr id="262402c2-dee2-807a-aed9-f46aa6c3a205"><td id="|~YR" class="">何にも気付かないで笑うあなたの</td><td id="VPvM" class="">なにも きづかないで わらう あなたの</td><td id="&gt;z&gt;s" class="">난니모 키즈카나이데 와라우 아나타노</td><td id="|JQo" class="">아무것도 모른 채 웃는 당신의</td><td id="gHGQ" class="">〜ないで → 하지 않고</td></tr><tr id="262402c2-dee2-806f-b2ca-d7e7b02d4a27"><td id="|~YR" class="">横顔をずっと見ていました</td><td id="VPvM" class="">よこがおを ずっと みていました</td><td id="&gt;z&gt;s" class="">요코가오오 즛토 미테이마시타</td><td id="|JQo" class="">옆모습을 계속 보고 있었어요</td><td id="gHGQ" class="">〜ていました → 계속된 과거 동작</td></tr><tr id="262402c2-dee2-80cf-aee6-de3caadd7aff"><td id="|~YR" class="">最初から</td><td id="VPvM" class="">さいしょから</td><td id="&gt;z&gt;s" class="">사이쇼카라</td><td id="|JQo" class="">처음부터</td><td id="gHGQ" class="">〜から → ~부터</td></tr><tr id="262402c2-dee2-80c8-8188-ffdcad7333cc"><td id="|~YR" class="">あなたの幸せしか願っていないから</td><td id="VPvM" class="">あなたの しあわせ しか ねがっていないから</td><td id="&gt;z&gt;s" class="">아나타노 시아와세시카 네갓테 이나이카라</td><td id="|JQo" class="">당신의 행복만을 바라고 있었으니까</td><td id="gHGQ" class="">〜しか〜ない → ~밖에 없다</td></tr><tr id="262402c2-dee2-80a4-b49b-c82361f13f5b"><td id="|~YR" class="">それがたとえ私じゃないとしても</td><td id="VPvM" class="">それが たとえ わたしじゃ ないと しても</td><td id="&gt;z&gt;s" class="">소레가 타토에 와타시쟈 나이토 시테모</td><td id="|JQo" class="">그게 만약 내가 아니라 하더라도</td><td id="gHGQ" class="">たとえ〜としても → 비록 ~라도</td></tr><tr id="262402c2-dee2-8007-8a84-c0cf7b2a66df"><td id="|~YR" class="">ちゃんと最後は</td><td id="VPvM" class="">ちゃんと さいごは</td><td id="&gt;z&gt;s" class="">챤토 사이고와</td><td id="|JQo" class="">확실히 마지막에는</td><td id="gHGQ" class="">ちゃんと → 확실히</td></tr><tr id="262402c2-dee2-8058-a8d3-c6a41ab792ce"><td id="|~YR" class="">隠した想いが見つからないように</td><td id="VPvM" class="">かくした おもいが みつからない ように</td><td id="&gt;z&gt;s" class="">카쿠시타 오모이가 미츠카라나이요-니</td><td id="|JQo" class="">숨겼던 마음이 들키지 않도록</td><td id="gHGQ" class="">〜ように → 목적/바람</td></tr><tr id="262402c2-dee2-8071-b288-e40e85611ad0"><td id="|~YR" class="">横から背中押すから</td><td id="VPvM" class="">よこから せなか おすから</td><td id="&gt;z&gt;s" class="">요코카라 세나카 오스카라</td><td id="|JQo" class="">옆에서 응원할테니까</td><td id="gHGQ" class="">〜から → 이유</td></tr><tr id="262402c2-dee2-80a7-b902-fb3e27d7b857"><td id="|~YR" class="">誰よりも幸せにしてあげて</td><td id="VPvM" class="">だれよりも しあわせに してあげて</td><td id="&gt;z&gt;s" class="">다레요리모 시아와세니 시테아게테</td><td id="|JQo" class="">누구보다 행복하게 해주세요</td><td id="gHGQ" class="">〜よりも → 비교, 〜してあげる → 해주다</td></tr></tbody></table><hr id="262402c2-dee2-80e8-98b7-e0efd009e4c6"/><h2 id="262402c2-dee2-80bb-9bc0-e1b2c8d7ca1f" class="">2절</h2><table id="262402c2-dee2-809a-94d1-f7e1961632ba" class="simple-table"><thead class="simple-table-header"><tr id="262402c2-dee2-806e-b810-e68b6a6de952"><th id="GTUH" class="simple-table-header-color simple-table-header">일본어</th><th id="jl^{" class="simple-table-header-color simple-table-header">일본어 발음</th><th id="Wcf\" class="simple-table-header-color simple-table-header">한글 발음</th><th id="J&gt;un" class="simple-table-header-color simple-table-header">한국어 번역</th><th id="Y^GJ" class="simple-table-header-color simple-table-header">문법/학습 포인트</th></tr></thead><tbody><tr id="262402c2-dee2-80b7-b189-fb7fc002df0d"><td id="GTUH" class="">あなたが今しているのは</td><td id="jl^{" class="">あなたが いま しているのは</td><td id="Wcf\" class="">아나타가 이마 시테이루노와</td><td id="J&gt;un" class="">당신이 지금 하고 있는 것은</td><td id="Y^GJ" class="">〜している → 현재 진행</td></tr><tr id="262402c2-dee2-80b7-8585-fc405664a115"><td id="GTUH" class="">私が一番聞きたくない話なのに</td><td id="jl^{" class="">わたしが いちばん ききたくない はなし なのに</td><td id="Wcf\" class="">와타시가 이치방 키키타쿠나이 하나시나노니</td><td id="J&gt;un" class="">내가 제일 듣고 싶지 않은 이야기인데</td><td id="Y^GJ" class="">〜なのに → ~인데, 반대 상황</td></tr><tr id="262402c2-dee2-809f-9587-d785f691bb51"><td id="GTUH" class="">それでも聞き続けるのは</td><td id="jl^{" class="">それでも ききつづけるのは</td><td id="Wcf\" class="">소레데모 키키츠즈케루노와</td><td id="J&gt;un" class="">그래도 계속 듣는 것은</td><td id="Y^GJ" class="">〜続ける → 계속하다</td></tr><tr id="262402c2-dee2-8062-8e4a-faa8a2136948"><td id="GTUH" class="">あなたに会えなくなるよりは</td><td id="jl^{" class="">あなたに あえなくなるよりは</td><td id="Wcf\" class="">아나타니 아에나쿠 나루요리와</td><td id="J&gt;un" class="">당신과 만날 수 없게 되는 것보다</td><td id="Y^GJ" class="">〜よりは → 비교</td></tr><tr id="262402c2-dee2-800e-a14c-e41d929a10c8"><td id="GTUH" class="">まだ少しだけましだから</td><td id="jl^{" class="">まだ すこしだけ まし だから</td><td id="Wcf\" class="">마다 스코시다케 마시다카라</td><td id="J&gt;un" class="">아직 조금은 더 낫기 때문에</td><td id="Y^GJ" class="">だから → 이유</td></tr><tr id="262402c2-dee2-80b7-8b92-d48e6a23c7b1"><td id="GTUH" class="">私が聞きたかったのは</td><td id="jl^{" class="">わたしが ききたかったのは</td><td id="Wcf\" class="">와타시가 키키타캇타노와</td><td id="J&gt;un" class="">내가 듣고 싶었던 것은</td><td id="Y^GJ" class="">〜たかった → ~하고 싶었다</td></tr><tr id="262402c2-dee2-804f-9d35-ffbe3c74a673"><td id="GTUH" class="">終電の時間でも好きな人の悪口でもなくて</td><td id="jl^{" class="">しゅうでんの じかんでも すきなひとの わるぐちでも なくて</td><td id="Wcf\" class="">슈-덴노 지칸데모 스키나 히토노 와루구치데모 나쿠테</td><td id="J&gt;un" class="">막차 시간이든, 좋아하는 사람 욕이든 아니고</td><td id="Y^GJ" class="">〜でもなくて → ~도 아니고</td></tr><tr id="262402c2-dee2-809e-8206-cdec02979d75"><td id="GTUH" class="">せめて今日のために切った髪に気付いて</td><td id="jl^{" class="">せめて きょうの ために きった かみに きづいて</td><td id="Wcf\" class="">세메테 쿄-노타메니 킷타 카미니 키즈이테</td><td id="J&gt;un" class="">적어도 오늘을 위해 자른 머리를 알아봐줘</td><td id="Y^GJ" class="">ために → ~하기 위해</td></tr><tr id="262402c2-dee2-8005-a315-d9f23e78b3b0"><td id="GTUH" class="">似合ってるよって言ってほしかった</td><td id="jl^{" class="">にあってるよって いってほしかった</td><td id="Wcf\" class="">니앗테루욧테 잇테 호시캇타</td><td id="J&gt;un" class="">잘 어울린다고 말해주길 원했어</td><td id="Y^GJ" class="">〜てほしい → ~해주길 원하다</td></tr></tbody></table><hr id="262402c2-dee2-8092-b36e-c04c7b3768d3"/><h2 id="262402c2-dee2-8090-913b-cc9af1cabdfb" class="">후렴</h2><table id="262402c2-dee2-80a2-8381-d93cfce10e83" class="simple-table"><thead class="simple-table-header"><tr id="262402c2-dee2-800f-aefb-c372561f2133"><th id="eVzh" class="simple-table-header-color simple-table-header">일본어</th><th id="WtE|" class="simple-table-header-color simple-table-header">일본어 발음</th><th id="~ET_" class="simple-table-header-color simple-table-header">한글 발음</th><th id="cRi_" class="simple-table-header-color simple-table-header">한국어 번역</th><th id="vE]a" class="simple-table-header-color simple-table-header">문법/학습 포인트</th></tr></thead><tbody><tr id="262402c2-dee2-8057-87b2-c3d70d2da342"><td id="eVzh" class="">最初から</td><td id="WtE|" class="">さいしょから</td><td id="~ET_" class="">사이쇼카라</td><td id="cRi_" class="">처음부터</td><td id="vE]a" class="">〜から → ~부터</td></tr><tr id="262402c2-dee2-8032-bed6-d7cf0ea64f14"><td id="eVzh" class="">あなたの幸せしか願っていないから</td><td id="WtE|" class="">あなたの しあわせ しか ねがっていないから</td><td id="~ET_" class="">아나타노 시아와세시카 네갓테 이나이카라</td><td id="cRi_" class="">당신의 행복만을 바라고 있었으니까</td><td id="vE]a" class="">〜しか〜ない → ~밖에 없다</td></tr><tr id="262402c2-dee2-80f8-b424-ea605b94c792"><td id="eVzh" class="">それがたとえ私じゃないとしても</td><td id="WtE|" class="">それが たとえ わたしじゃ ないとしても</td><td id="~ET_" class="">소레가 타토에 와타시쟈 나이토 시테모</td><td id="cRi_" class="">그게 만약 내가 아니라 하더라도</td><td id="vE]a" class="">たとえ〜としても → 비록 ~라도</td></tr><tr id="262402c2-dee2-80df-8cc4-d31c84d82a52"><td id="eVzh" class="">ちゃんと最後は</td><td id="WtE|" class="">ちゃんと さいごは</td><td id="~ET_" class="">챤토 사이고와</td><td id="cRi_" class="">확실히 마지막에는</td><td id="vE]a" class="">ちゃんと → 확실히</td></tr><tr id="262402c2-dee2-8006-bb57-c2179aefe32a"><td id="eVzh" class="">隠した想いが見つからないよう</td><td id="WtE|" class=""></td><td id="~ET_" class=""></td><td id="cRi_" class=""></td><td id="vE]a" class=""></td></tr></tbody></table><p id="262402c2-dee2-802e-a2e2-cf615bd3c8ba" class="">に | かくした おもいが みつからない ように | 카쿠시타 오모이가 미츠카라나이요-니 | 숨겼던 마음이 들키지 않도록 | 〜ように → 목적/바람 |</p><p id="262402c2-dee2-80e3-b0a9-f21334880e42" class="">| 横から背中押すから | よこから せなか おすから | 요코카라 세나카 오스카라 | 옆에서 응원할테니까 | 〜から → 이유 |</p><p id="262402c2-dee2-80c1-a932-d0cc9900dafb" class="">| 誰よりも幸せにしてあげて | だれよりも しあわせに してあげて | 다레요리모 시아와세니 시테아게테 | 누구보다 행복하게 해주세요 | 〜よりも → 비교, 〜してあげる → 해주다 |</p><hr id="262402c2-dee2-8046-a553-d8c06bc4144d"/><h2 id="262402c2-dee2-801b-b4d4-e6acd59f1e96" class="">3절</h2><table id="262402c2-dee2-8075-8d6e-e331cff42c3b" class="simple-table"><thead class="simple-table-header"><tr id="262402c2-dee2-80f1-ac81-e1a57b709888"><th id="Wkig" class="simple-table-header-color simple-table-header">일본어</th><th id="N_&gt;S" class="simple-table-header-color simple-table-header">일본어 발음</th><th id="Tmef" class="simple-table-header-color simple-table-header">한글 발음</th><th id="ofMa" class="simple-table-header-color simple-table-header">한국어 번역</th><th id="bYo|" class="simple-table-header-color simple-table-header">문법/학습 포인트</th></tr></thead><tbody><tr id="262402c2-dee2-808e-bc45-d28334b55625"><td id="Wkig" class="">こんなに好きになる前に</td><td id="N_&gt;S" class="">こんなに すきに なる まえに</td><td id="Tmef" class="">콘나니 스키니나루 마에니</td><td id="ofMa" class="">이렇게나 좋아지기 전에</td><td id="bYo|" class="">〜前に → ~하기 전에</td></tr><tr id="262402c2-dee2-80cf-922c-c6b7e896b8b4"><td id="Wkig" class="">どこかで手は打てなかったのかな</td><td id="N_&gt;S" class="">どこかで ては うてなかったのかな</td><td id="Tmef" class="">도코카데 테와 우테나캇타노카나</td><td id="ofMa" class="">어디선가 손 쓸 수 없었던 걸까</td><td id="bYo|" class="">〜なかったのかな → ~하지 못했을까 (회상/추측)</td></tr><tr id="262402c2-dee2-801e-aee3-c02f2e565d5f"><td id="Wkig" class="">私が選んで望んで恋したんだから</td><td id="N_&gt;S" class="">わたしが えらんで のぞんで こいしたんだから</td><td id="Tmef" class="">와타시가 에란데 노존데 코이시탄다카라</td><td id="ofMa" class="">내가 선택해서 원하고 사랑했으니까</td><td id="bYo|" class="">〜んだから → ~했으니까</td></tr><tr id="262402c2-dee2-8059-9450-d53955d5b7a2"><td id="Wkig" class="">叶わなくても気持ちが伝えられなくても</td><td id="N_&gt;S" class="">かなわなくても きもちが つたえられなくても</td><td id="Tmef" class="">카나와나쿠테모 키모치가 츠타에라레나쿠테모</td><td id="ofMa" class="">이루어지지 않아도, 마음이 전해지지 않아도</td><td id="bYo|" class="">〜ても → ~해도</td></tr><tr id="262402c2-dee2-8095-8a25-ea9764a63895"><td id="Wkig" class="">こんな気持ちになれた事を大切にしたい</td><td id="N_&gt;S" class="">こんな きもちに なれた ことを たいせつに したい</td><td id="Tmef" class="">콘나 키모치니 나레타 코토오 타이세츠니 시타이</td><td id="ofMa" class="">이런 마음이 된 걸 간직하고 싶어요</td><td id="bYo|" class="">〜たい → 하고 싶다, 〜こと → ~하는 것</td></tr><tr id="262402c2-dee2-80f0-b4fb-c89c505d1c47"><td id="Wkig" class="">本当だよ</td><td id="N_&gt;S" class="">ほんとうだよ</td><td id="Tmef" class="">혼토-다요</td><td id="ofMa" class="">정말요</td><td id="bYo|" class="">だよ → 강조, 친근한 표현</td></tr><tr id="262402c2-dee2-8036-8a6c-c5ad9145150a"><td id="Wkig" class="">会いたくて</td><td id="N_&gt;S" class="">あいたくて</td><td id="Tmef" class="">아이타쿠테</td><td id="ofMa" class="">보고 싶어서</td><td id="bYo|" class="">〜たくて → 하고 싶어서, 이유·감정 표현</td></tr><tr id="262402c2-dee2-8001-b494-e87afbe15b3d"><td id="Wkig" class="">でもほら横にいても</td><td id="N_&gt;S" class="">でも ほら よこに いても</td><td id="Tmef" class="">데모 호라 요코니 이테모</td><td id="ofMa" class="">하지만 봐, 옆에 있어도</td><td id="bYo|" class="">〜ても → ~해도</td></tr><tr id="262402c2-dee2-80d7-9d37-f1ab46157242"><td id="Wkig" class="">また辛くなってる</td><td id="N_&gt;S" class="">また つらく なってる</td><td id="Tmef" class="">마타 츠라쿠 낫테루</td><td id="ofMa" class="">다시 괴로워지잖아</td><td id="bYo|" class="">〜てる → ~하고 있다 (구어체)</td></tr><tr id="262402c2-dee2-802b-9574-e0602c72eb7c"><td id="Wkig" class="">その人より私の方が先に</td><td id="N_&gt;S" class="">そのひとより わたしのほうが さきに</td><td id="Tmef" class="">소노 히토요리 와타시노 호-가 사키니</td><td id="ofMa" class="">그 사람보다 내가 먼저</td><td id="bYo|" class="">〜より〜の方が → ~보다 ~가 더</td></tr><tr id="262402c2-dee2-80f6-9846-fbe47bf5f07a"><td id="Wkig" class="">好きになったのになぁ</td><td id="N_&gt;S" class="">すきに なったのに なぁ</td><td id="Tmef" class="">스키니 낫타노니나-</td><td id="ofMa" class="">좋아했는데 말이야</td><td id="bYo|" class="">〜のに → ~인데, 회상·안타까움 표현</td></tr><tr id="262402c2-dee2-8006-ba91-deda59bc2f54"><td id="Wkig" class="">でも私があなたを好きなくらい</td><td id="N_&gt;S" class="">でも わたしが あなたを すきなくらい</td><td id="Tmef" class="">데모 와타시가 아나타오 스키나쿠라이</td><td id="ofMa" class="">하지만 내가 그대를 좋아하는 만큼</td><td id="bYo|" class="">〜なくらい → ~할 정도로</td></tr><tr id="262402c2-dee2-8081-8453-d3d5e82f30ff"><td id="Wkig" class="">あなたも想っているなら</td><td id="N_&gt;S" class="">あなたも おもっているなら</td><td id="Tmef" class="">아나타모 오못테 이루나라</td><td id="ofMa" class="">그대도 그렇다면</td><td id="bYo|" class="">〜なら → ~라면</td></tr><tr id="262402c2-dee2-8079-9a0f-d0232fe7b8da"><td id="Wkig" class="">私じゃやっぱりダメだね</td><td id="N_&gt;S" class="">わたしじゃ やっぱり だめだね</td><td id="Tmef" class="">와타시쟈 얏파리 다메다네</td><td id="ofMa" class="">나로는 역시 안 되는 거겠죠</td><td id="bYo|" class="">〜じゃダメ → ~로는 안 된다, 억양 표현</td></tr><tr id="262402c2-dee2-80d1-9285-f276f22ff83b"><td id="Wkig" class="">最初から</td><td id="N_&gt;S" class="">さいしょから</td><td id="Tmef" class="">사이쇼카라</td><td id="ofMa" class="">처음부터</td><td id="bYo|" class="">〜から → ~부터</td></tr><tr id="262402c2-dee2-8077-84a6-ce2110b55663"><td id="Wkig" class="">あなたの幸せしか願っていないから</td><td id="N_&gt;S" class="">あなたの しあわせ しか ねがっていないから</td><td id="Tmef" class="">아나타노 시아와세시카 네갓테 이나이카라</td><td id="ofMa" class="">그대의 행복만을 바라고 있었으니까</td><td id="bYo|" class="">〜しか〜ない → ~밖에 없다</td></tr><tr id="262402c2-dee2-80f4-8cdb-c7b2532892a7"><td id="Wkig" class="">それがたとえ私じゃないとしても</td><td id="N_&gt;S" class="">それが たとえ わたしじゃ ないとしても</td><td id="Tmef" class="">소레가 타토에 와타시쟈 나이토 시테모</td><td id="ofMa" class="">그게 만약 내가 아니더라도</td><td id="bYo|" class="">たとえ〜としても → 비록 ~라도</td></tr><tr id="262402c2-dee2-80ac-a323-fc0ed3d40401"><td id="Wkig" class="">ちゃんと最後は</td><td id="N_&gt;S" class="">ちゃんと さいごは</td><td id="Tmef" class="">챤토 사이고와</td><td id="ofMa" class="">확실히 마지막에는</td><td id="bYo|" class="">ちゃんと → 확실히</td></tr><tr id="262402c2-dee2-804c-bd3e-e4f660d2aabe"><td id="Wkig" class="">隠した想いが見つからないように</td><td id="N_&gt;S" class="">かくした おもいが みつからない ように</td><td id="Tmef" class="">카쿠시타 오모이가 미츠카라나이요-니</td><td id="ofMa" class="">숨겼던 마음이 들키지 않도록</td><td id="bYo|" class="">〜ように → 목적/바람</td></tr><tr id="262402c2-dee2-80f5-a549-e8d3d0eb67cb"><td id="Wkig" class="">横から背中押すから</td><td id="N_&gt;S" class="">よこから せなか おすから</td><td id="Tmef" class="">요코카라 세나카 오스카라</td><td id="ofMa" class="">옆에서 응원할 테니까</td><td id="bYo|" class="">〜から → 이유</td></tr><tr id="262402c2-dee2-80d6-8941-ce00ed311e4e"><td id="Wkig" class="">誰よりも幸せにしてあげて</td><td id="N_&gt;S" class="">だれよりも しあわせに してあげて</td><td id="Tmef" class="">다레요리모 시아와세니 시테아게테</td><td id="ofMa" class="">누구보다도 행복해주세요</td><td id="bYo|" class="">〜よりも → 비교, 〜してあげる → 해주다</td></tr></tbody></table><hr id="262402c2-dee2-801c-a4f0-ea216ac1cf3d"/><h2 id="262402c2-dee2-8092-b137-c744307c0b0e" class="">🔹 일본어 학습 포인트 정리</h2><ol type="1" id="262402c2-dee2-80b9-b92b-d37bacdcc7c5" class="numbered-list" start="1"><li><strong>동사 형태</strong><ul id="262402c2-dee2-80ae-b313-e26db0af0441" class="bulleted-list"><li style="list-style-type:disc">〜てた → 완료, 과거 상태</li></ul><ul id="262402c2-dee2-80c6-a3a0-c03927adb2a2" class="bulleted-list"><li style="list-style-type:disc">〜していた → 과거 진행형</li></ul><ul id="262402c2-dee2-8069-a0d1-d9c7d1852e8f" class="bulleted-list"><li style="list-style-type:disc">〜している → 현재 진행</li></ul><ul id="262402c2-dee2-801b-bcbc-e8fc26a631c7" class="bulleted-list"><li style="list-style-type:disc">〜たかった → ~하고 싶었다</li></ul></li></ol><ol type="1" id="262402c2-dee2-80e2-9ba2-c941631d5b1b" class="numbered-list" start="2"><li><strong>조사와 표현</strong><ul id="262402c2-dee2-8067-a5ee-f2bcec2a3621" class="bulleted-list"><li style="list-style-type:disc">〜しか〜ない → ~밖에 없다</li></ul><ul id="262402c2-dee2-80ba-88b2-e3e30a05af64" class="bulleted-list"><li style="list-style-type:disc">〜よりも → ~보다 더</li></ul><ul id="262402c2-dee2-808c-9f90-d290b26812f0" class="bulleted-list"><li style="list-style-type:disc">〜ように → 목적/바람</li></ul><ul id="262402c2-dee2-804b-8b32-e733ae745f34" class="bulleted-list"><li style="list-style-type:disc">〜のか → 의문</li></ul><ul id="262402c2-dee2-8087-a12e-df6816b568b8" class="bulleted-list"><li style="list-style-type:disc">〜なのに → 반대 상황</li></ul><ul id="262402c2-dee2-8045-a949-e14665ddec88" class="bulleted-list"><li style="list-style-type:disc">〜てほしい → ~해주길 원하다</li></ul><ul id="262402c2-dee2-80db-b731-fe4bdb50f321" class="bulleted-list"><li style="list-style-type:disc">〜ために → ~하기 위해</li></ul></li></ol><ol type="1" id="262402c2-dee2-80d5-97c7-c2a46e1777ae" class="numbered-list" start="3"><li><strong>감정 표현</strong><ul id="262402c2-dee2-807c-b8ee-f9f30e931452" class="bulleted-list"><li style="list-style-type:disc">恋に落ちる → 사랑에 빠지다</li></ul><ul id="262402c2-dee2-80ab-a141-c845f9615d84" class="bulleted-list"><li style="list-style-type:disc">気付く → 알아채다</li></ul><ul id="262402c2-dee2-80b6-a817-cbce62cd4b35" class="bulleted-list"><li style="list-style-type:disc">幸せにする → 행복하게 해주다</li></ul></li></ol><hr id="262402c2-dee2-8019-b7a8-eb4666d1e43a"/><p id="262402c2-dee2-80b5-b96f-dc8027ee0ee2" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
