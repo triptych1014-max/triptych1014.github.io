@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>귀멸의 칼날 퀴즈 (30문항)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        .option-button {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .selected-correct {
+            background-color: #10b981 !important; /* Emerald 500 */
+            color: white !important;
+        }
+        .selected-incorrect {
+            background-color: #ef4444 !important; /* Red 500 */
+            color: white !important;
+        }
+        .leaderboard-item:nth-child(1) { background-color: #fcd34d; } /* Amber 300 - Gold */
+        .leaderboard-item:nth-child(2) { background-color: #d1d5db; } /* Gray 300 - Silver */
+        .leaderboard-item:nth-child(3) { background-color: #fecaca; } /* Red 200 - Bronze */
+        .submit-btn {
+            background-image: linear-gradient(to right, #ef4444, #f97316); /* Red to Orange gradient */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.5), 0 2px 4px -2px rgba(249, 115, 22, 0.5);
+        }
+        .submit-btn:hover {
+            box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.7), 0 4px 6px -2px rgba(249, 115, 22, 0.7);
+            transform: translateY(-1px);
+        }
+    </style>
+
+    <!-- Firebase Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firestore 로깅 활성화 (디버깅용)
+        setLogLevel('Debug');
+
+        // 전역 변수 설정 (Canvas 환경에서 제공됨)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Firebase 초기화 및 전역 변수로 할당
+        let app, db, auth;
+
+        // JavaScript 전역 스코프에 Firebase 관련 함수 및 변수 노출
+        window.initializeFirebase = async () => {
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.error("Firebase config is missing. Leaderboard functionality will not work.");
+                document.getElementById('leaderboard-status').innerText = "❌ 리더보드 기능 비활성화 (Firebase 설정 누락)";
+                return;
+            }
+
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                window.db = db;
+                window.auth = auth;
+                window.appId = appId;
+                
+                let userCredential;
+                if (initialAuthToken) {
+                    userCredential = await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    userCredential = await signInAnonymously(auth);
+                }
+                
+                const userId = userCredential.user.uid;
+                window.userId = userId;
+                console.log("Firebase initialized. User ID:", userId);
+
+                // UI에 사용자 ID 표시
+                document.getElementById('user-id-display').innerText = `내 ID: ${userId}`;
+                document.getElementById('leaderboard-status').innerText = "✅ 리더보드 연결됨";
+                
+                // 인증 후 리더보드 로드 시작
+                window.loadLeaderboard();
+
+            } catch (error) {
+                console.error("Firebase initialization or sign-in failed:", error);
+                document.getElementById('leaderboard-status').innerText = "❌ Firebase 연결 오류";
+            }
+        };
+        
+        // Firestore 헬퍼 함수: 점수 제출
+        window.submitScoreToFirebase = async (name, score) => {
+            if (!window.db || !window.userId) {
+                console.error("Database not initialized or user not signed in.");
+                return;
+            }
+
+            const userId = window.userId;
+            // Public collection path: /artifacts/{appId}/public/data/{your_collection_name}
+            const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/demon_slayer_quiz_scores`);
+            const userDocRef = doc(leaderboardCollectionRef, userId);
+
+            try {
+                // 이름이 비어있으면 ID로 대체
+                const userName = name.trim() || `참가자_${userId.substring(0, 8)}`;
+
+                await setDoc(userDocRef, {
+                    userId: userId,
+                    name: userName,
+                    score: score,
+                    timestamp: serverTimestamp(),
+                    quizVersion: 'v1' // 나중에 퀴즈가 업데이트될 경우를 대비
+                }, { merge: true }); // 기존 문서가 있으면 업데이트
+
+                console.log("Score submitted successfully for user:", userName);
+                return true;
+            } catch (error) {
+                console.error("Error submitting score:", error);
+                return false;
+            }
+        };
+
+        // Firestore 헬퍼 함수: 리더보드 로드 (실시간 스냅샷)
+        window.loadLeaderboard = () => {
+            if (!window.db) return;
+
+            // Public collection path
+            const leaderboardCollectionRef = collection(db, `artifacts/${appId}/public/data/demon_slayer_quiz_scores`);
+            const q = query(leaderboardCollectionRef);
+
+            // 실시간 리스너 설정
+            onSnapshot(q, (snapshot) => {
+                const scores = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    scores.push(data);
+                });
+
+                // 점수 기준 내림차순 정렬, 점수가 같으면 최신 제출 시간 기준
+                scores.sort((a, b) => {
+                    if (b.score !== a.score) {
+                        return b.score - a.score;
+                    }
+                    // Timestamp가 없는 경우를 대비
+                    const timeA = a.timestamp?.toMillis() || 0;
+                    const timeB = b.timestamp?.toMillis() || 0;
+                    return timeB - timeA;
+                });
+
+                // 상위 7명만 표시 (요청에 따라)
+                const topScores = scores.slice(0, 7);
+                window.renderLeaderboard(topScores);
+            }, (error) => {
+                console.error("Error fetching leaderboard:", error);
+                document.getElementById('leaderboard-status').innerText = "❌ 리더보드 로드 오류";
+            });
+        };
+
+        // DOM 로드 완료 후 Firebase 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            window.initializeFirebase();
+        });
+    </script>
+</head>
+<body class="bg-gray-100 p-4">
+
+    <div id="app" class="quiz-container">
+        <h1 class="text-4xl font-extrabold text-red-700 mt-4 mb-2">
+            <span class="text-black">⚔️</span> 귀멸의 칼날 퀴즈
+        </h1>
+        <p class="text-gray-600 mb-6">총 30문항 | 7명 참여 스코어 기록 가능</p>
+
+        <!-- Quiz Status Area -->
+        <div class="w-full max-w-lg mb-4 p-3 bg-white rounded-xl shadow-md text-sm text-center border-t-4 border-red-500">
+            <p id="user-id-display" class="font-medium text-gray-700 break-words">내 ID: 로딩 중...</p>
+            <p id="leaderboard-status" class="text-xs text-green-600 mt-1">리더보드 로딩 중...</p>
+        </div>
+
+        <!-- Screens will be rendered here -->
+        <div id="quiz-screen" class="card hidden"></div>
+        <div id="result-screen" class="card hidden"></div>
+        <div id="start-screen" class="card"></div>
+
+        <!-- Leaderboard Display -->
+        <div class="card max-w-lg mt-6">
+            <h2 class="text-2xl font-bold mb-4 text-center text-red-600">🏆 실시간 리더보드 (최대 7명)</h2>
+            <ul id="leaderboard-list" class="space-y-2">
+                <li class="p-3 text-center text-gray-500">리더보드 데이터를 로드하는 중입니다...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 전역 상태 관리
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answeredQuestions = [];
+        let userName = '';
+
+        // --- 퀴즈 데이터 (30 문항) ---
+        const quizData = [
+            {
+                questionNumber: 1,
+                question: "주인공 카마도 탄지로의 이마에 있는 흉터가 처음 생긴 계기는 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "동생을 구하려다 불에 데어서", rationale: "이마의 흉터는 동생을 구하려다 난로에 부딪혀 생긴 화상 자국입니다. 이후 최종 선별에서 더 크게 변합니다.", isCorrect: true },
+                    { text: "귀살대 입단 시험 중 다쳐서", rationale: "입단 시험 중 다친 것은 맞지만, 이마의 흉터 자체가 처음 생긴 계기는 아닙니다.", isCorrect: false },
+                    { text: "히노카미 카구라를 사용할 때마다 발생하여", rationale: "히노카미 카구라와는 관련이 있지만, 흉터가 처음 생긴 원인은 아닙니다.", isCorrect: false },
+                    { text: "도깨비와의 전투에서 공격을 받아", rationale: "초기 흉터는 도깨비와의 전투가 아닌 어린 시절의 사고로 발생했습니다.", isCorrect: false },
+                    { text: "무잔과의 싸움 중 발생한 반점", rationale: "이것은 흉터가 아닌 '반점'의 발현과 관련이 있으며, 훨씬 나중에 일어난 일입니다.", isCorrect: false }
+                ],
+                hint: "탄지로의 가족과 관련된 어린 시절의 사고를 떠올려 보세요.",
+            },
+            {
+                questionNumber: 2,
+                question: "탄지로의 여동생이자 도깨비가 된 카마도 네즈코는 어떤 방법으로 잠을 자나요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "낮에도 평범하게 이불 속에서", rationale: "네즈코는 햇빛을 피해야 하므로 주로 낮에는 깊은 잠에 들지만, 평범한 이불 속은 아닙니다.", isCorrect: false },
+                    { text: "오빠가 지고 다니는 나무 상자 속에서", rationale: "네즈코는 햇빛을 피하고 이동하기 위해 탄지로가 메고 다니는 특제 나무 상자 안에서 잠을 잡니다.", isCorrect: true },
+                    { text: "주변의 흙을 파서 굴을 만든 후", rationale: "초기에는 흙을 파서 숨기도 했지만, 주로 잠을 자는 장소는 나무 상자입니다.", isCorrect: false },
+                    { text: "밤에만 잠을 자지 않고 활동한다", rationale: "도깨비가 된 후 햇빛을 피하는 동안 잠을 통해 체력을 회복합니다.", isCorrect: false },
+                    { text: "도깨비의 힘으로 전혀 잠을 자지 않는다", rationale: "네즈코도 수면을 통해 체력을 회복하며, 이는 도깨비에게도 중요한 요소입니다.", isCorrect: false }
+                ],
+                hint: "네즈코가 햇빛을 피하고 이동할 때 사용하는 장치를 생각해 보세요.",
+            },
+            {
+                questionNumber: 3,
+                question: "귀살대의 최고 계급을 뜻하는 '주(柱, Hashira)'에 해당하지 않는 인물은 누구인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "토미오카 기유 (수주)", rationale: "토미오카 기유는 물의 호흡을 사용하는 '수주'입니다.", isCorrect: false },
+                    { text: "코쵸우 시노부 (충주)", rationale: "코쵸우 시노부는 벌레의 호흡을 사용하는 '충주'입니다.", isCorrect: false },
+                    { text: "우로코다키 사콘지", rationale: "우로코다키 사콘지는 전직 수주이자 탄지로와 기유의 스승입니다. 현재 주는 아닙니다.", isCorrect: true },
+                    { text: "칸로지 미츠리 (연주)", rationale: "칸로지 미츠리는 사랑의 호흡을 사용하는 '연주'입니다.", isCorrect: false },
+                    { text: "히메지마 교메이 (암주)", rationale: "히메지마 교메이는 바위의 호흡을 사용하는 '암주'입니다.", isCorrect: false }
+                ],
+                hint: "현재 시점의 귀살대 최고 전력인지, 아니면 전직 주이거나 스승 포지션인지 구분해 보세요.",
+            },
+            {
+                questionNumber: 4,
+                question: "이노스케 하시비라가 사용하는 호흡법의 이름은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "물의 호흡", rationale: "물의 호흡은 탄지로와 기유가 주로 사용하는 호흡법입니다.", isCorrect: false },
+                    { text: "번개의 호흡", rationale: "번개의 호흡은 젠이츠가 주로 사용하는 호흡법입니다.", isCorrect: false },
+                    { text: "짐승의 호흡", rationale: "이노스케는 스스로 만들어낸 '짐승의 호흡'을 사용합니다.", isCorrect: true },
+                    { text: "바람의 호흡", rationale: "바람의 호흡은 시나즈가와 사네미가 사용하는 호흡법입니다.", isCorrect: false },
+                    { text: "꽃의 호흡", rationale: "꽃의 호흡은 카나오가 사용하는 호흡법입니다.", isCorrect: false }
+                ],
+                hint: "이노스케의 야생적이고 독특한 전투 방식과 연관된 이름을 생각해 보세요.",
+            },
+            {
+                questionNumber: 5,
+                question: "아카자가 섬광처럼 나타나 렌고쿠 쿄주로에게 전투를 제안했던 십이귀월의 계급은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "하현 1", rationale: "하현 1은 엔무로, 무한열차 에피소드의 주 악당이었지만, 렌고쿠와 싸운 것은 아닙니다.", isCorrect: false },
+                    { text: "상현 6", rationale: "상현 6은 규타로와 다키로, 유곽 편의 주 악당이었습니다.", isCorrect: false },
+                    { text: "상현 4", rationale: "상현 4는 한텐구로, 도공 마을 편의 주 악당이었습니다.", isCorrect: false },
+                    { text: "상현 3", rationale: "아카자는 십이귀월 중 '상현 3'이며 렌고쿠와 대결했습니다.", isCorrect: true },
+                    { text: "상현 1", rationale: "상현 1은 코쿠시보로, 아카자보다 훨씬 강력합니다.", isCorrect: false }
+                ],
+                hint: "무한열차 사건의 가장 강력한 도깨비 계급을 기억해 보세요.",
+            },
+            {
+                questionNumber: 6,
+                question: "탄지로가 최종 선별 시험을 통과하기 위해 2년 동안 훈련했던 스승의 이름은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "히메지마 교메이", rationale: "히메지마는 '암주'입니다. 탄지로의 직접적인 스승이 아닙니다.", isCorrect: false },
+                    { text: "렌고쿠 쿄주로", rationale: "렌고쿠는 탄지로 일행과 무한열차에서 만난 '염주'입니다.", isCorrect: false },
+                    { text: "우로코다키 사콘지", rationale: "우로코다키 사콘지는 전직 '수주'이자 탄지로와 기유의 스승입니다.", isCorrect: true },
+                    { text: "코쵸우 시노부", rationale: "코쵸우 시노부는 '충주'입니다.", isCorrect: false },
+                    { text: "카가야시키 우부야시키", rationale: "이분은 귀살대의 '당주'입니다.", isCorrect: false }
+                ],
+                hint: "후지카사네 산에서 그가 남긴 '숨을 쉬어라'라는 가르침을 생각해 보세요.",
+            },
+            {
+                questionNumber: 7,
+                question: "번개의 호흡을 사용하는 아가츠마 젠이츠가 유일하게 구사할 수 있는 형(型)은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "제2형: 벼락이 울리네", rationale: "젠이츠는 6개의 형 중 오직 제1형만을 마스터했습니다.", isCorrect: false },
+                    { text: "제4형: 원뢰", rationale: "젠이츠는 6개의 형 중 오직 제1형만을 마스터했습니다.", isCorrect: false },
+                    { text: "제1형: 벽력일섬", rationale: "젠이츠는 오직 번개의 호흡 제1형인 '벽력일섬'만을 극한으로 단련했습니다.", isCorrect: true },
+                    { text: "제6형: 전율굉뢰", rationale: "젠이츠는 6개의 형 중 오직 제1형만을 마스터했습니다.", isCorrect: false },
+                    { text: "제7형: 화뢰신", rationale: "제7형은 젠이츠가 스스로 창조한 형입니다.", isCorrect: false }
+                ],
+                hint: "이 기술은 젠이츠가 가장 자주, 그리고 가장 빠르게 사용하는 기술입니다.",
+            },
+            {
+                questionNumber: 8,
+                question: "도깨비를 죽일 수 있는 유일한 무기인 '일륜도'의 색깔은 사용하는 사람의 특성에 따라 변합니다. 탄지로의 일륜도 색깔은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "노란색", rationale: "노란색은 젠이츠가 사용하는 번개의 호흡과 관련이 있습니다.", isCorrect: false },
+                    { text: "파란색", rationale: "파란색은 토미오카 기유가 사용하는 물의 호흡과 관련이 있습니다.", isCorrect: false },
+                    { text: "검은색", rationale: "탄지로의 일륜도는 매우 희귀한 '검은색'으로, 태양의 호흡의 사용자와 관련이 있다는 설이 있습니다.", isCorrect: true },
+                    { text: "빨간색", rationale: "빨간색은 염주 렌고쿠의 불꽃의 호흡과 관련이 있습니다.", isCorrect: false },
+                    { text: "하늘색", rationale: "하늘색은 '안개'의 호흡을 사용하는 토키토 무이치로와 관련이 있습니다.", isCorrect: false }
+                ],
+                hint: "탄지로가 사용하는 호흡의 근원과 가장 밀접하게 연결된 색입니다.",
+            },
+            {
+                questionNumber: 9,
+                question: "도공 마을에서 탄지로의 일륜도를 만들어주는 대장장이의 이름은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "테츠카와", rationale: "도공 마을의 일원일 수는 있지만, 탄지로의 전담 대장장이는 아닙니다.", isCorrect: false },
+                    { text: "우로코다키", rationale: "우로코다키는 탄지로의 스승입니다.", isCorrect: false },
+                    { text: "하가네즈카 호타루", rationale: "하가네즈카는 탄지로의 일륜도를 만들어주며, 흉폭한 성격과 독특한 가면으로 유명합니다.", isCorrect: true },
+                    { text: "칸로지", rationale: "칸로지는 '연주'입니다.", isCorrect: false },
+                    { text: "교코", rationale: "교코는 '상현 5' 도깨비입니다.", isCorrect: false }
+                ],
+                hint: "유독 탄지로에게 화를 잘 내는 가면을 쓴 대장장이를 떠올려 보세요.",
+            },
+            {
+                questionNumber: 10,
+                question: "귀살대의 '당주'인 카가야시키 우부야시키의 신체적인 특징은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "양쪽 다리에 장애가 있다", rationale: "신체적인 특징은 얼굴에 있습니다.", isCorrect: false },
+                    { text: "온몸에 귀신 같은 무늬가 있다", rationale: "이것은 도깨비의 문양과 비슷하지만, 당주의 특징은 아닙니다.", isCorrect: false },
+                    { text: "태어날 때부터 앞이 보이지 않는다", rationale: "당주는 특정한 병으로 인해 앞을 보지 못합니다.", isCorrect: false },
+                    { text: "얼굴에 불치병으로 인한 큰 상처가 있다", rationale: "우부야시키 가문의 저주로 인해 얼굴 전체에 보라색 상처가 퍼져 있습니다.", isCorrect: true },
+                    { text: "매우 키가 작고 늙어 보인다", rationale: "키가 작은 것은 사실이나, 가장 두드러지는 특징은 얼굴의 상처입니다.", isCorrect: false }
+                ],
+                hint: "무잔과의 관련성 때문에 가문에 내려오는 저주와 관련된 특징을 생각해 보세요.",
+            },
+            {
+                questionNumber: 11,
+                question: "젠이츠가 잠이 들었을 때만 강해지는 이유는 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "잠이 들면 몸이 이완되어 호흡이 편해지기 때문에", rationale: "몸의 이완보다는 공포심 극복과 관련된 정신적인 영역의 문제입니다.", isCorrect: false },
+                    { text: "평소의 극심한 공포심이 사라지고 본능적인 전투 감각만 남기 때문에", rationale: "잠이 들면 공포심이 사라져 무의식적으로 훈련된 기술을 발휘하게 됩니다.", isCorrect: true },
+                    { text: "자면서도 번개의 호흡 제2형을 익히게 되어서", rationale: "젠이츠는 제1형만을 사용하며, 잠이 전투력을 올리는 직접적인 원인은 아닙니다.", isCorrect: false },
+                    { text: "잠이 든 상태에서만 도깨비의 피가 작용해서", rationale: "젠이츠는 도깨비가 아닙니다.", isCorrect: false },
+                    { text: "스승으로부터 받은 저주 때문에", rationale: "저주와는 관련이 없습니다.", isCorrect: false }
+                ],
+                hint: "젠이츠의 평소 성격과 관련하여 그를 방해하는 가장 큰 요소를 생각해 보세요.",
+            },
+            {
+                questionNumber: 12,
+                question: "이노스케가 항상 쓰고 다니는 멧돼지 가죽의 주인은 누구였나요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "이노스케의 어머니", rationale: "어머니는 인간이었으며 도깨비에게 살해당했습니다.", isCorrect: false },
+                    { text: "자신을 키워준 산의 신", rationale: "산의 신은 상징적인 존재일 뿐, 멧돼지가죽의 주인은 아닙니다.", isCorrect: false },
+                    { text: "이노스케와 함께 산에서 자란 멧돼지 어미", rationale: "이노스케는 자신을 키워준 멧돼지 어미의 가죽을 쓰고 다닙니다.", isCorrect: true },
+                    { text: "첫 번째로 잡은 도깨비의 가죽", rationale: "이것은 멧돼지 가죽이며 도깨비의 가죽이 아닙니다.", isCorrect: false },
+                    { text: "멧돼지 호흡을 전수해준 스승", rationale: "멧돼지 호흡은 이노스케 본인이 창조한 것입니다.", isCorrect: false }
+                ],
+                hint: "이노스케가 멧돼지와 함께 성장한 환경을 떠올려 보세요.",
+            },
+            {
+                questionNumber: 13,
+                question: "탄지로가 사용하는 '히노카미 카구라'는 원래 어떤 호흡법에서 파생된 것인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "물의 호흡", rationale: "탄지로가 물의 호흡을 배웠지만, 히노카미 카구라는 파생된 것이 아닙니다.", isCorrect: false },
+                    { text: "불꽃의 호흡", rationale: "불꽃의 호흡과 관련이 있지만, 히노카미 카구라가 불꽃 호흡에서 파생된 것은 아닙니다.", isCorrect: false },
+                    { text: "태양의 호흡", rationale: "'태양의 호흡'은 모든 호흡의 원류이며, 히노카미 카구라는 카마도 가문에 전해진 태양의 호흡입니다.", isCorrect: true },
+                    { text: "바람의 호흡", rationale: "바람의 호흡은 사네미가 사용합니다.", isCorrect: false },
+                    { text: "사랑의 호흡", rationale: "사랑의 호흡은 미츠리가 사용합니다.", isCorrect: false }
+                ],
+                hint: "귀살대 호흡법의 가장 오래되고 근본적인 호흡을 생각해 보세요.",
+            },
+            {
+                questionNumber: 14,
+                question: "'음주' 우즈이 텐겐이 도깨비와 싸울 때 사용하는 독특한 칼은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "두 자루의 사슬에 연결된 거대한 낫", rationale: "낫은 규타로가 사용하는 무기입니다.", isCorrect: false },
+                    { text: "손잡이와 칼날이 분리된 쌍검", rationale: "우즈이 텐겐은 두 자루의 칼을 사용하지만 분리되지는 않습니다.", isCorrect: false },
+                    { text: "폭약을 내장한 폭발성 일륜도", rationale: "폭약은 주로 그의 닌자 도구에 사용됩니다.", isCorrect: false },
+                    { text: "사슬로 연결된 두 자루의 거대한 식칼(쌍칼)", rationale: "우즈이 텐겐은 사슬로 연결된 두 자루의 거대한 특제 일륜도를 사용합니다.", isCorrect: true },
+                    { text: "자유자재로 변형되는 쇠봉", rationale: "이것은 암주 히메지마 교메이의 무기입니다.", isCorrect: false }
+                ],
+                hint: "화려함을 추구하는 그의 특징을 반영하여 사슬로 연결된 무기 형태를 기억해 보세요.",
+            },
+            {
+                questionNumber: 15,
+                question: "무잔이 가장 혐오하고 무서워하는 인간은 누구인가요? (과거의 인물)",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "우로코다키 사콘지", rationale: "우로코다키는 강하지만 무잔이 가장 무서워하는 인물은 아닙니다.", isCorrect: false },
+                    { text: "츠기쿠니 요리이치", rationale: "츠기쿠니 요리이치는 태양의 호흡 창시자이자 무잔을 거의 죽일 뻔했던 인물로, 무잔에게 트라우마를 심어주었습니다.", isCorrect: true },
+                    { text: "카가야시키 우부야시키", rationale: "당주는 무잔의 숙적이지만, 무잔이 가장 무서워하는 인물은 요리이치입니다.", isCorrect: false },
+                    { text: "토미오카 기유", rationale: "기유는 강하지만 무잔이 가장 두려워하는 인물은 아닙니다.", isCorrect: false },
+                    { text: "렌고쿠 쿄주로", rationale: "렌고쿠는 강하지만 무잔이 가장 두려워하는 인물은 아닙니다.", isCorrect: false }
+                ],
+                hint: "모든 호흡의 원류인 '태양의 호흡'과 관련된 전설적인 인물을 생각해 보세요.",
+            },
+            {
+                questionNumber: 16,
+                question: "코쵸우 시노부가 사용하는 벌레의 호흡은 다른 주들과 비교했을 때 어떤 점에서 가장 큰 차이점을 가지나요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "가장 많은 형(型)을 가지고 있다", rationale: "형의 개수와는 관계가 없으며, 그녀의 신체적 한계를 극복하기 위한 방식입니다.", isCorrect: false },
+                    { text: "칼날을 사용하지 않고 맨손으로 싸운다", rationale: "일륜도를 사용하지만, 일반적인 베기가 아닙니다.", isCorrect: false },
+                    { text: "도깨비의 목을 베지 못하고 독을 주입한다", rationale: "시노부는 힘이 약해 도깨비의 목을 베지 못하고, 대신 일륜도에 등꽃 독을 발라 독살하는 방식으로 싸웁니다.", isCorrect: true },
+                    { text: "가장 강한 파괴력을 자랑한다", rationale: "파괴력보다는 속도와 치명적인 독에 의존합니다.", isCorrect: false },
+                    { text: "가장 느리고 방어에 특화되어 있다", rationale: "그녀는 귀살대 내에서 가장 빠른 주 중 한 명입니다.", isCorrect: false }
+                ],
+                hint: "그녀의 작은 체구와 독특한 일륜도 모양에 담긴 의미를 생각해 보세요.",
+            },
+            {
+                questionNumber: 17,
+                question: "유곽편에서 '상현 6' 규타로와 다키를 쓰러뜨리기 위해 탄지로 일행과 함께 싸웠던 '주'는 누구인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "토키토 무이치로 (하주)", rationale: "무이치로는 도공 마을 편에서 활약했습니다.", isCorrect: false },
+                    { text: "히메지마 교메이 (암주)", rationale: "히메지마는 후반부에 주로 활약했습니다.", isCorrect: false },
+                    { text: "우즈이 텐겐 (음주)", rationale: "우즈이 텐겐은 유곽 잠입 작전을 주도하고 상현 6과 대결했습니다.", isCorrect: true },
+                    { text: "이구로 오바나이 (사주)", rationale: "오바나이는 후반부에 주로 활약했습니다.", isCorrect: false },
+                    { text: "렌고쿠 쿄주로 (염주)", rationale: "렌고쿠는 무한열차 편에서 사망했습니다.", isCorrect: false }
+                ],
+                hint: "화려한 닌자 가문 출신이며, '화려함'을 강조하는 주를 떠올려 보세요.",
+            },
+            {
+                questionNumber: 18,
+                question: "네즈코의 혈귀술인 '폭혈'의 특징은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "상대를 얼려 움직임을 멈춘다", rationale: "이것은 코쿠시보우의 기술과 관련이 있습니다.", isCorrect: false },
+                    { text: "접촉한 대상을 잠재운다", rationale: "이것은 하현 1 엔무의 기술과 관련이 있습니다.", isCorrect: false },
+                    { text: "도깨비에게만 치명적인 상처를 입히고 일륜도를 보조한다", rationale: "폭혈은 도깨비에게는 치명적이지만, 인간과 일륜도는 손상시키지 않는 특성을 가지고 있습니다.", isCorrect: true },
+                    { text: "인간의 기억을 조종하여 환상을 보여준다", rationale: "이것은 하현 1 엔무의 기술과 관련이 있습니다.", isCorrect: false },
+                    { text: "검은 진흙을 만들어 상대를 익사시킨다", rationale: "이것은 루이의 아버지 도깨비의 능력과 관련이 있습니다.", isCorrect: false }
+                ],
+                hint: "네즈코의 혈귀술이 오직 도깨비에게만 효과적이라는 사실을 생각해 보세요.",
+            },
+            {
+                questionNumber: 19,
+                question: "귀살대의 임무를 전달하고 도깨비의 위치를 알려주는 '까마귀'의 이름은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "스이렌", rationale: "흔한 새 이름이지만, 귀살대 까마귀의 이름은 아닙니다.", isCorrect: false },
+                    { text: "긴코", rationale: "긴코는 젠이츠의 까마귀 이름입니다.", isCorrect: false },
+                    { text: "칸타로", rationale: "탄지로의 이름과 비슷하지만, 까마귀 이름은 아닙니다.", isCorrect: false },
+                    { text: "텐노지 마츠에몬", rationale: "텐노지 마츠에몬은 탄지로의 까마귀 이름입니다.", isCorrect: true },
+                    { text: "우메", rationale: "다키의 본명입니다.", isCorrect: false }
+                ],
+                hint: "탄지로의 까마귀에게 붙여진 풀네임을 기억해 보세요.",
+            },
+            {
+                questionNumber: 20,
+                question: "도공 마을에서 등장하는 '상현 5' 교코의 혈귀술은 주로 어떤 매체를 통해 공격을 가하나요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "폭발하는 피를 이용한 공격", rationale: "이것은 규타로의 기술과 관련이 있습니다.", isCorrect: false },
+                    { text: "무궁무진하게 뻗어나가는 끈", rationale: "이것은 루이의 기술과 관련이 있습니다.", isCorrect: false },
+                    { text: "도자기, 항아리 안에 가두거나 변형시킨 괴물", rationale: "교코는 주로 자신이 만든 항아리를 통해 공격하고 이동하며 괴물을 소환합니다.", isCorrect: true },
+                    { text: "상대를 잠재우는 최면술", rationale: "이것은 엔무의 기술과 관련이 있습니다.", isCorrect: false },
+                    { text: "수많은 얼음 조각을 이용한 공격", rationale: "이것은 도우마의 기술과 관련이 있습니다.", isCorrect: false }
+                ],
+                hint: "그의 외형과 관련된 예술 작품이나 공예품을 생각해 보세요.",
+            },
+            {
+                questionNumber: 21,
+                question: "탄지로가 사용하는 물의 호흡 중, 가장 방어적이고 공격을 흘려보내는 데 사용되는 기술은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "제1형: 수면 베기", rationale: "공격 기술입니다.", isCorrect: false },
+                    { text: "제7형: 물방울 파문 찌르기", rationale: "찌르기 공격 기술입니다.", isCorrect: false },
+                    { text: "제10형: 생생유전", rationale: "연속 공격 기술입니다.", isCorrect: false },
+                    { text: "제4형: 들이친 파도", rationale: "공격 기술입니다.", isCorrect: false },
+                    { text: "제3형: 유유 춤", rationale: "유연하게 움직이며 공격을 흘려보내는 방어 및 회피 기술입니다.", isCorrect: true }
+                ],
+                hint: "춤을 추듯 유연하게 움직이는 형의 이름을 찾아보세요.",
+            },
+            {
+                questionNumber: 22,
+                question: "'풍주' 시나즈가와 사네미의 동생으로, 귀살대원이자 탄지로의 동기인 인물은 누구인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "하시비라 이노스케", rationale: "이노스케는 사네미의 동생이 아닙니다.", isCorrect: false },
+                    { text: "토미오카 기유", rationale: "기유는 사네미의 동생이 아닙니다.", isCorrect: false },
+                    { text: "시나즈가와 겐야", rationale: "겐야는 사네미의 동생이며, 일륜도가 아닌 총을 사용하는 독특한 대원입니다.", isCorrect: true },
+                    { text: "아가츠마 젠이츠", rationale: "젠이츠는 사네미의 동생이 아닙니다.", isCorrect: false },
+                    { text: "카마도 탄지로", rationale: "탄지로는 사네미의 동생이 아닙니다.", isCorrect: false }
+                ],
+                hint: "이 인물은 도깨비를 잡아먹는 독특한 방식으로 싸웁니다.",
+            },
+            {
+                questionNumber: 23,
+                question: "무잔이 '십이귀월'을 해체하기 위해 하현들을 모두 소집하여 살해했던 사건이 일어난 장소는?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "후지카사네 산", rationale: "최종 선별 장소입니다.", isCorrect: false },
+                    { text: "나타구모 산", rationale: "탄지로가 루이와 싸운 곳입니다.", isCorrect: false },
+                    { text: "무한성", rationale: "무잔이 하현들을 모아 학살했던 공간이자 최종 결전의 장소입니다.", isCorrect: true },
+                    { text: "도공 마을", rationale: "상현 4, 5와 싸운 곳입니다.", isCorrect: false },
+                    { text: "나비 저택", rationale: "탄지로 일행이 회복 훈련을 한 곳입니다.", isCorrect: false }
+                ],
+                hint: "나키메의 혈귀술로 통제되는 공간을 떠올려 보세요.",
+            },
+            {
+                questionNumber: 24,
+                question: "젠이츠의 스승이자 전직 '주'였던 인물이 도깨비로 변해 '상현 6'의 일원으로 등장하는 에피소드는 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "무한열차 편", rationale: "무한열차 편의 상현은 아카자입니다.", isCorrect: false },
+                    { text: "나타구모 산 편", rationale: "나타구모 산 편의 상현은 루이입니다.", isCorrect: false },
+                    { text: "합동 강화 훈련 편", rationale: "이 시기에는 이미 그 사건이 해결되었습니다.", isCorrect: false },
+                    { text: "무한성 편", rationale: "무한성 편에서 젠이츠는 자신의 동문인 카이가쿠와 재회하며 그가 상현 6이 되었음을 알게 됩니다.", isCorrect: true },
+                    { text: "유곽 편", rationale: "유곽 편의 상현 6은 규타로와 다키입니다.", isCorrect: false }
+                ],
+                hint: "번개의 호흡을 계승한 젠이츠의 '선배'와 관련된 에피소드입니다.",
+            },
+            {
+                questionNumber: 25,
+                question: "'연주' 칸로지 미츠리가 사용하는 독특한 일륜도의 형태는 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "거대한 방패와 도끼", rationale: "이것은 암주 히메지마 교메이의 무기와 비슷합니다.", isCorrect: false },
+                    { text: "두 개의 날이 달린 이도류", rationale: "이것은 음주 우즈이 텐겐의 무기와 비슷합니다.", isCorrect: false },
+                    { text: "채찍처럼 휘어지는 검", rationale: "미츠리의 일륜도는 매우 얇고 유연하여 채찍처럼 휘어지는 특징이 있습니다.", isCorrect: true },
+                    { text: "검이 아닌 두 개의 주먹 보호대", rationale: "이것은 사네미 동생 겐야의 무기와 비슷합니다.", isCorrect: false },
+                    { text: "칼날이 없는 검집", rationale: "카나오의 일륜도와는 관련이 없습니다.", isCorrect: false }
+                ],
+                hint: "사랑의 호흡의 유연함과 부드러움을 극대화하기 위한 칼날의 특징을 생각해 보세요.",
+            },
+            {
+                questionNumber: 26,
+                question: "도깨비의 시조이자 최종 보스인 키부츠지 무잔의 가장 큰 목표는 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "세계를 지배하고 귀살대를 멸망시키는 것", rationale: "부차적인 목표는 맞지만, 가장 큰 목표는 아닙니다.", isCorrect: false },
+                    { text: "츠기쿠니 요리이치의 복수를 하는 것", rationale: "무잔은 요리이치를 혐오하고 두려워합니다.", isCorrect: false },
+                    { text: "모든 귀살대원을 도깨비로 만드는 것", rationale: "이것은 도우마의 목표와 비슷합니다.", isCorrect: false },
+                    { text: "자신을 죽일 수 있는 태양빛을 극복하는 것", rationale: "무잔은 햇빛 아래에서도 살 수 있는 완벽한 불멸의 존재가 되는 것을 가장 큰 목표로 합니다.", isCorrect: true },
+                    { text: "귀살대의 당주인 우부야시키 가문을 완전히 몰살하는 것", rationale: "이것은 무잔의 주요 목표 중 하나이지만, 가장 궁극적인 목표는 아닙니다.", isCorrect: false }
+                ],
+                hint: "도깨비가 가진 가장 근본적인 약점을 극복하려는 욕망과 관련이 있습니다.",
+            },
+            {
+                questionNumber: 27,
+                question: "코쵸우 시노부가 사용하는 벌레의 호흡은 어떤 호흡법에서 파생되었나요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "물의 호흡", rationale: "시노부의 호흡은 꽃의 호흡에서 파생되었습니다.", isCorrect: false },
+                    { text: "바람의 호흡", rationale: "바람의 호흡과는 관련이 없습니다.", isCorrect: false },
+                    { text: "꽃의 호흡", rationale: "벌레의 호흡은 '꽃의 호흡'에서 파생되었으며, 그녀의 언니인 코쵸우 카나에의 호흡이기도 합니다.", isCorrect: true },
+                    { text: "사랑의 호흡", rationale: "사랑의 호흡은 미츠리의 독자적인 호흡입니다.", isCorrect: false },
+                    { text: "소리의 호흡", rationale: "소리의 호흡은 우즈이 텐겐의 호흡입니다.", isCorrect: false }
+                ],
+                hint: "그녀의 언니인 코쵸우 카나에가 사용하던 호흡법을 생각해 보세요.",
+            },
+            {
+                questionNumber: 28,
+                question: "탄지로가 귀살대로서 처음으로 만났던 십이귀월의 도깨비는 누구인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "아카자 (상현 3)", rationale: "아카자는 무한열차 편에서 처음 만났습니다.", isCorrect: false },
+                    { text: "엔무 (하현 1)", rationale: "엔무는 무한열차 편에서 처음 만났습니다.", isCorrect: false },
+                    { text: "루이 (하현 5)", rationale: "나타구모 산에서 탄지로가 처음으로 만난 십이귀월입니다.", isCorrect: true },
+                    { text: "다키 (상현 6)", rationale: "다키는 유곽 편에서 처음 만났습니다.", isCorrect: false },
+                    { text: "교코 (상현 5)", rationale: "교코는 도공 마을 편에서 처음 만났습니다.", isCorrect: false }
+                ],
+                hint: "나타구모 산에서 거미줄을 사용하던 도깨비 가족의 일원을 생각해 보세요.",
+            },
+            {
+                questionNumber: 29,
+                question: "카나오가 동전을 던져 선택을 결정하는 습관을 가지게 된 이유와 가장 관련이 깊은 인물은 누구인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "토미오카 기유", rationale: "기유와는 큰 관련이 없습니다.", isCorrect: false },
+                    { text: "카가야시키 우부야시키", rationale: "당주와는 큰 관련이 없습니다.", isCorrect: false },
+                    { text: "카마도 네즈코", rationale: "네즈코는 카나오의 습관의 원인이 아닙니다.", isCorrect: false },
+                    { text: "코쵸우 시노부의 언니 (카나에)", rationale: "카나에가 카나오에게 '스스로 마음이 원하는 대로 행동하라'는 의미로 동전을 주었기 때문입니다.", isCorrect: true },
+                    { text: "렌고쿠 쿄주로", rationale: "렌고쿠와는 큰 관련이 없습니다.", isCorrect: false }
+                ],
+                hint: "카나오를 입양하고 돌봐준 사람 중 한 명에게서 영향을 받았습니다.",
+            },
+            {
+                questionNumber: 30,
+                question: "귀살대의 임무를 완수한 대원들에게 식사를 제공하고 휴식을 취하게 하는 기관의 이름은 무엇인가요?",
+                imageUrl: null,
+                answerOptions: [
+                    { text: "귀살대 본부", rationale: "본부는 당주와 주들이 머무는 곳입니다.", isCorrect: false },
+                    { text: "환락의 거리 (유곽)", rationale: "유곽은 임무 장소였습니다.", isCorrect: false },
+                    { text: "나비 저택", rationale: "부상당한 대원들의 치료와 재활 훈련이 이루어지는 곳입니다.", isCorrect: true },
+                    { text: "도공 마을", rationale: "일륜도를 제작하는 마을입니다.", isCorrect: false },
+                    { text: "후지카사네 산", rationale: "최종 선별 장소였습니다.", isCorrect: false }
+                ],
+                hint: "코쵸우 시노부가 운영하며 아오이와 세 명의 소녀들이 일하는 곳을 떠올려 보세요.",
+            }
+        ];
+
+        // --- UI 렌더링 함수 ---
+        function renderStartScreen() {
+            const screen = document.getElementById('start-screen');
+            screen.classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+
+            screen.innerHTML = `
+                <h2 class="text-3xl font-bold text-center text-red-600 mb-6">퀴즈 시작 준비</h2>
+                <p class="text-lg text-gray-700 mb-6 text-center">총 30문제, 5지 선다형 퀴즈입니다. 정답을 선택하고 다음 문제로 넘어가세요.</p>
+                
+                <div class="mb-6">
+                    <label for="username-input" class="block text-gray-700 text-sm font-bold mb-2">참가자 이름 (리더보드 등록용, 최대 8자)</label>
+                    <input type="text" id="username-input" class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:ring-2 focus:ring-red-500" placeholder="예: 탄지로, 젠이츠, 이노스케" maxlength="8">
+                    <p class="text-xs text-gray-500 mt-1">이름을 입력하지 않으면 사용자 ID로 표시됩니다.</p>
+                </div>
+                
+                <button onclick="startQuiz()" class="submit-btn w-full text-white font-bold py-3 px-4 rounded-xl focus:outline-none focus:shadow-outline text-xl">
+                    🔥 퀴즈 시작 (총 30 문제)
+                </button>
+                <div id="start-message" class="mt-4 text-sm text-center text-red-500 font-bold hidden"></div>
+            `;
+            // 로컬 스토리지에서 이름 불러오기 (편의상)
+            const storedName = localStorage.getItem('demon_slayer_quiz_username');
+            if (storedName) {
+                document.getElementById('username-input').value = storedName;
+                userName = storedName;
+            }
+        }
+
+        function startQuiz() {
+            const inputElement = document.getElementById('username-input');
+            userName = inputElement.value.trim();
+            
+            // 로컬 스토리지에 이름 저장
+            localStorage.setItem('demon_slayer_quiz_username', userName);
+
+            currentQuestionIndex = 0;
+            score = 0;
+            answeredQuestions = Array(quizData.length).fill(null); // 사용자가 선택한 옵션 인덱스 저장
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const screen = document.getElementById('quiz-screen');
+            const q = quizData[currentQuestionIndex];
+
+            // 사용자가 이전에 선택한 답변 인덱스
+            const selectedOptionIndex = answeredQuestions[currentQuestionIndex];
+
+            const optionsHtml = q.answerOptions.map((opt, index) => {
+                const isSelected = selectedOptionIndex === index;
+                const isAnswered = selectedOptionIndex !== null;
+
+                let classes = 'option-button w-full text-left p-4 rounded-xl mb-3 border-2 border-gray-200';
+                
+                if (isAnswered) {
+                    // 답을 선택한 후
+                    classes += ' cursor-default';
+                    if (opt.isCorrect) {
+                        classes += ' bg-emerald-500 text-white font-bold shadow-md'; // 정답
+                    } else if (isSelected) {
+                        classes += ' bg-red-500 text-white font-bold shadow-md'; // 오답 선택
+                    } else {
+                        classes += ' bg-gray-100 text-gray-600'; // 선택 안된 오답
+                    }
+                } else {
+                    // 답변 대기 중
+                    classes += ' bg-white text-gray-800 hover:bg-red-50 hover:border-red-500';
+                }
+
+                return `
+                    <button 
+                        class="${classes}" 
+                        onclick="selectAnswer(${index})" 
+                        ${isAnswered ? 'disabled' : ''}
+                    >
+                        <span class="font-semibold mr-3 text-red-400">(${index + 1})</span> ${opt.text}
+                    </button>
+                `;
+            }).join('');
+
+            // 힌트 및 해설 영역 (답변 후 표시)
+            let hintRationaleHtml = '';
+            if (selectedOptionIndex !== null) {
+                const selectedOption = q.answerOptions[selectedOptionIndex];
+                const correctAnswer = q.answerOptions.find(opt => opt.isCorrect);
+                
+                let isCorrect = correctAnswer === selectedOption;
+                let rationaleText = isCorrect ? correctAnswer.rationale : `${selectedOption.rationale} (정답 해설: ${correctAnswer.rationale})`;
+
+                hintRationaleHtml = `
+                    <div class="mt-4 p-4 rounded-xl ${isCorrect ? 'bg-emerald-50 border-emerald-300' : 'bg-red-50 border-red-300'} border-l-4">
+                        <p class="font-bold text-lg mb-2 ${isCorrect ? 'text-emerald-700' : 'text-red-700'}">
+                            ${isCorrect ? '✅ 정답입니다' : '❌ 오답입니다'}
+                        </p>
+                        <p class="text-gray-700 text-sm"><strong>해설:</strong> ${rationaleText}</p>
+                    </div>
+                `;
+            } else {
+                hintRationaleHtml = `
+                    <div class="mt-4 p-3 rounded-xl bg-yellow-50 border-l-4 border-yellow-300">
+                        <p class="font-bold text-yellow-700 mb-1">💡 힌트</p>
+                        <p class="text-gray-700 text-sm">${q.hint}</p>
+                    </div>
+                `;
+            }
+
+
+            screen.innerHTML = `
+                <div class="text-center mb-4">
+                    <span class="text-2xl font-extrabold text-red-600">${currentQuestionIndex + 1}</span>
+                    <span class="text-xl text-gray-500"> / ${quizData.length}</span>
+                </div>
+                
+                <progress class="w-full h-2 bg-gray-200 rounded-full" value="${currentQuestionIndex + (selectedOptionIndex !== null ? 1 : 0)}" max="${quizData.length}"></progress>
+
+                <div class="mt-4 p-6 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                    <p class="text-xl font-semibold text-gray-900">${q.question}</p>
+                </div>
+
+                <div class="mt-6">
+                    ${optionsHtml}
+                </div>
+
+                ${hintRationaleHtml}
+
+                <div class="mt-8 flex justify-between">
+                    <button 
+                        onclick="navigateQuestion(-1)" 
+                        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition-colors"
+                        ${currentQuestionIndex === 0 ? 'disabled' : ''}
+                    >
+                        &lt; 이전 문제
+                    </button>
+
+                    <button 
+                        onclick="navigateQuestion(1)" 
+                        class="${selectedOptionIndex === null ? 'bg-gray-300 cursor-not-allowed' : 'submit-btn'}" 
+                        ${selectedOptionIndex === null ? 'disabled' : ''}
+                    >
+                        ${currentQuestionIndex === quizData.length - 1 ? '✅ 결과 확인' : '다음 문제 &gt;'}
+                    </button>
+                </div>
+            `;
+        }
+
+        function selectAnswer(optionIndex) {
+            // 이미 답변한 문제인지 확인
+            if (answeredQuestions[currentQuestionIndex] !== null) return;
+            
+            const q = quizData[currentQuestionIndex];
+            answeredQuestions[currentQuestionIndex] = optionIndex;
+            
+            // 정답 체크 및 점수 업데이트
+            if (q.answerOptions[optionIndex].isCorrect) {
+                score++;
+            }
+            
+            // UI를 업데이트하여 정답/오답 표시
+            renderQuestion();
+        }
+
+        function navigateQuestion(direction) {
+            if (direction === 1 && currentQuestionIndex === quizData.length - 1) {
+                renderResultScreen();
+                return;
+            }
+
+            const newIndex = currentQuestionIndex + direction;
+            if (newIndex >= 0 && newIndex < quizData.length) {
+                currentQuestionIndex = newIndex;
+                renderQuestion();
+            }
+        }
+        
+        // --- 결과 및 리더보드 ---
+
+        function renderResultScreen() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            const screen = document.getElementById('result-screen');
+            const total = quizData.length;
+            const percentage = (score / total) * 100;
+            const rankMessage = percentage >= 90 ? '최고의 검사!' : percentage >= 70 ? '주에 근접한 실력!' : percentage >= 50 ? '귀살대원 레벨!' : '다시 도전하세요!';
+
+            screen.innerHTML = `
+                <h2 class="text-3xl font-bold text-center text-red-600 mb-6">퀴즈 결과</h2>
+                <div class="text-center mb-6">
+                    <div class="text-5xl font-extrabold text-red-700">${score} / ${total}</div>
+                    <p class="text-xl text-gray-700 mt-2">${percentage.toFixed(1)}% 정답</p>
+                    <p class="text-2xl font-semibold text-gray-800 mt-4">${rankMessage}</p>
+                </div>
+                
+                <div class="p-4 bg-gray-50 rounded-xl mb-6">
+                    <p class="text-lg font-bold text-gray-700 mb-2">점수 제출</p>
+                    <p class="text-sm text-gray-600 mb-3">리더보드에 당신의 기록을 남겨보세요. (현재 이름: ${userName.trim() || '사용자 ID'})</p>
+                    <button id="submit-score-btn" onclick="submitScore()" class="submit-btn w-full text-white font-bold py-3 px-4 rounded-xl text-lg">
+                        점수 제출 및 리더보드 등록
+                    </button>
+                    <p id="submit-status" class="mt-3 text-sm font-medium text-center"></p>
+                </div>
+
+                <button onclick="renderStartScreen()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-xl transition-colors">
+                    처음으로 돌아가기
+                </button>
+            `;
+        }
+        
+        async function submitScore() {
+            const submitBtn = document.getElementById('submit-score-btn');
+            const submitStatus = document.getElementById('submit-status');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = '제출 중...';
+            submitStatus.className = 'mt-3 text-sm font-medium text-center text-blue-500';
+            submitStatus.innerText = '점수 제출 중입니다. 잠시 기다려주세요...';
+
+            const success = await window.submitScoreToFirebase(userName, score);
+            
+            if (success) {
+                submitStatus.className = 'mt-3 text-sm font-medium text-center text-emerald-600';
+                submitStatus.innerText = '✅ 점수가 성공적으로 등록되었습니다! 리더보드를 확인하세요.';
+            } else {
+                submitStatus.className = 'mt-3 text-sm font-medium text-center text-red-600';
+                submitStatus.innerText = '❌ 점수 등록에 실패했습니다. 콘솔을 확인해주세요.';
+            }
+
+            submitBtn.innerText = '점수 제출 완료';
+        }
+
+        window.renderLeaderboard = (scores) => {
+            const list = document.getElementById('leaderboard-list');
+            if (!list) return;
+
+            if (scores.length === 0) {
+                list.innerHTML = `<li class="p-3 text-center text-gray-500">아직 등록된 점수가 없습니다. 첫 번째 기록을 남겨보세요!</li>`;
+                return;
+            }
+
+            list.innerHTML = scores.map((s, index) => {
+                const rank = index + 1;
+                let rankText = `${rank}위`;
+                let textColor = 'text-gray-800';
+
+                // 상위 3등 특별 색상
+                if (rank === 1) { 
+                    rankText = '🥇 1위'; 
+                    textColor = 'text-yellow-900 font-extrabold';
+                } else if (rank === 2) { 
+                    rankText = '🥈 2위'; 
+                    textColor = 'text-gray-900 font-bold';
+                } else if (rank === 3) { 
+                    rankText = '🥉 3위'; 
+                    textColor = 'text-red-900 font-semibold';
+                }
+
+                // 현재 사용자 표시
+                const isCurrentUser = window.userId && s.userId === window.userId;
+
+                // 이름이 없으면 ID의 일부만 표시
+                const displayName = s.name.trim() || `ID: ${s.userId.substring(0, 8)}...`;
+                
+                return `
+                    <li class="leaderboard-item flex justify-between items-center p-3 rounded-lg ${isCurrentUser ? 'border-2 border-red-600 ring-2 ring-red-300' : 'border border-gray-200'}">
+                        <span class="w-1/4 text-left ${textColor} text-lg">${rankText}</span>
+                        <span class="w-1/2 font-semibold text-center truncate ${isCurrentUser ? 'text-red-700' : 'text-gray-700'}">
+                            ${displayName}
+                        </span>
+                        <span class="w-1/4 text-right font-extrabold text-xl text-red-600">
+                            ${s.score}점
+                        </span>
+                    </li>
+                `;
+            }).join('');
+        };
+
+        // 초기 화면 렌더링
+        window.onload = renderStartScreen;
+
+    </script>
+</body>
+</html>
+
